@@ -1,6 +1,38 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import ApolloClient from "apollo-boost";
+import { gql } from "apollo-boost";
+import { ApolloProvider, Query } from "react-apollo";
+
+const client = new ApolloClient({
+  uri: "/.netlify/functions/graphql"
+});
+
+const qHello = client.query({
+  query: gql`
+    {
+          hello
+    }
+  `
+})
+// Replace the previous LambdaDemo with the code below:
+/*
+const LambdaDemo1 = () => (
+  <ApolloProvider client={client}>
+    <Query
+      query={gql`
+        {
+          hello
+        }
+      `}
+    >
+      {({ data }) =>
+        <div>A greeting from the server: {data.hello}</div>}
+    </Query>
+  </ApolloProvider>
+);
+*/
 
 class LambdaDemo extends Component {
   constructor(props) {
@@ -17,6 +49,13 @@ class LambdaDemo extends Component {
       .then(json => this.setState({ loading: false, msg: json.msg }));
   };
 
+  handleClickGraphql = () => e => {
+    e.preventDefault();
+    this.setState({ loading: true });
+    qHello.then(({data}) => this.setState({ loading: false, msg: data.hello}));
+  };
+
+
   render() {
     const { loading, msg } = this.state;
 
@@ -28,12 +67,16 @@ class LambdaDemo extends Component {
         <button onClick={this.handleClick('async-chuck-norris')}>
           {loading ? 'Loading...' : 'Call Async Lambda'}
         </button>
+        <button onClick={this.handleClickGraphql()}>
+          {loading ? 'Loading...' : 'Call Graphql Lambda'}
+        </button>
         <br />
         <span>{msg}</span>
       </p>
     );
   }
 }
+
 
 class App extends Component {
   render() {
